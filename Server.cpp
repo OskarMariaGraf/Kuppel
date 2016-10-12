@@ -14,11 +14,16 @@
 #include <errno.h>
 #include <iostream>
 #include <unistd.h>
+#include <sys/stat.h>//----------------
+#include <fcntl.h> //-----------------
 
 using namespace std;
 
 int newsockfd = 0;
 int austausch = 0;
+int RegenRinne = 0;
+const char* myfifo = "/tmp/RegenRinne";
+double buf;
 
 void CleanUp()
 {
@@ -28,7 +33,6 @@ void CleanUp()
 
 void error(string msg) {
     cout << msg << ": " << strerror(errno)<< endl;
-austausch = 0;
 }
 
 int DatenSenden(int sockfd, double Daten[5]) {
@@ -54,6 +58,19 @@ int BefehlSenden(int sockfd, char Befehl) {
 return 1;
 }
 
+double DatenEmpfangen(int sockfd) {
+    double buffer, buffer2 ;
+    int n;
+		n = read(sockfd, (void *)&buffer,8);
+    if (n <= 0)
+    {
+   	 error("ERROR beim Empfangen der Sensordaten");
+   	 return 420;
+    }
+    cout << austausch<<": SensorDaten " << (double)buffer << " empfangen" << endl;
+    return buffer;
+}
+
 char BefehlEmpfangen(int sockfd) {
     char buffer;
     int n;
@@ -74,7 +91,7 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in serv_addr, cli_addr;
     int n;
     char letzerBefehl = 0;
-    printf("using port #%d\n", portno);
+    printf("Port #%d\n", portno);
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     int option = 1;
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
@@ -107,6 +124,7 @@ int main(int argc, char *argv[]) {
         	error("setsockopt failed\n");
    	 cout << "Client verbunden" << endl;
    	 while (1) {
+		 RegenRinne = open(myfifo, O_RDONLY | O_NONBLOCK);	//RegenPipe
    		 usleep(INTERVALL);
 		austausch++;
    		 letzerBefehl = BefehlEmpfangen(newsockfd);
@@ -114,11 +132,11 @@ int main(int argc, char *argv[]) {
    		 {
    		 case 0xff://Daten Senden
    			 double d[5];
-   			 d[0] = 1.0;
-   			 d[1] = 2.5;
-   			 d[2] = 324872.123;
-   			 d[3] = 123.45;
-   			 d[4] = 0.00123;
+   			 d[0] = 420;									//Wolkenverdeckung
+   			 d[1] = DatenEmpfangen(RegenRinne);				//Regen
+   			 d[2] = 324872.123;								//Windgeschwindigkeit
+   			 d[3] = 123.45;									//Himmelshelligkeit
+   			 d[4] = 0.00123;								//Himmelsqualität
    			 if (DatenSenden(newsockfd, d)==-1)
 				goto connect;
    			 if(BefehlSenden(newsockfd, 0xff)==-1)//noch da
