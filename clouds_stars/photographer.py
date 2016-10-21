@@ -3,8 +3,6 @@
 # Name:       photographer
 # Purpose:    
 # Created:    21.10.16
-from clouds_stars.stars import clouded
-
 __author__ = 'Carlos Esparza-Sanchez'
 #-------------------------------------------------------------------------------
 
