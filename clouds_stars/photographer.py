@@ -16,12 +16,13 @@ import os
 
 PIPE_IN_NAME = '/tmp/camin'
 PIPE_OUT_NAME = '/tmp/camout'
+
 T = 1.0 # Zeitintervall, in dem Bilder gemacht werden
 
 os.mkfifo(PIPE_IN_NAME)
 os.mkfifo(PIPE_OUT_NAME)
 
-
+# die Pipes werden zur Kommunikation mit dem Server verwendet - vgl. Server.cpp
 with open(PIPE_IN_NAME, 'rb') as pipe_in, open(PIPE_OUT_NAME, 'wb') as pipe_out:
     while True: #TODO: hier sollten wir vielleicht Uhrzeiten abfragen
         stream = BytesIO() # wir emulieren eine Datei
