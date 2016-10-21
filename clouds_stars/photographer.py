@@ -29,7 +29,7 @@ while True: #TODO: hier sollten wir vielleicht Uhrzeiten abfragen
     stream = BytesIO() # wir emulieren eine Datei
     t = time()
 
-    camera.capture(stream) # Photo schießen
+    camera.capture(stream, format='jpeg') # Photo schießen
     image = im.open(stream.getvalue())
     print(clouded(image))
 
