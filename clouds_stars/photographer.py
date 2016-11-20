@@ -19,6 +19,9 @@ PIPE_OUT_NAME = '/tmp/camout'
 
 T = 1.0 # Zeitintervall, in dem Bilder gemacht werden
 
+os.remove(PIPE_IN_NAME)
+os.remove(PIPE_OUT_NAME)
+
 os.mkfifo(PIPE_IN_NAME)
 os.mkfifo(PIPE_OUT_NAME)
 
