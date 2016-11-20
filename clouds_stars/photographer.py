@@ -41,7 +41,8 @@ with open(PIPE_IN_NAME, 'rb') as pipe_in, open(PIPE_OUT_NAME, 'wb') as pipe_out:
             camera.capture(stream, format='jpeg') # Photo schießen
 
         image = im.open(stream.getvalue())
-        cloud_cover = clouded(image)
+        gray = np.asarray(image.convert('LA'))[..., 0]
+        cloud_cover = clouded(gray)
 
         pipe_in.read() # warten auf Anfrage
         pipe_out.write( bytes([0, 0, 0, int(100 * cloud_cover)]) )
