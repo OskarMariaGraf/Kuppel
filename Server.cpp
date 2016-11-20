@@ -33,6 +33,8 @@ using namespace std;
 int newsockfd = 0;
 int RegenRinne1 = 0;
 int RegenRinne2 = 0;
+int KameraWolken1 = 0;
+int KameraWolken2 = 0;
 const char* WritePipe = "/tmp/RegenRinne1";
 const char* ReadPipe = "/tmp/RegenRinne2";
 const char *WritePipeCam = "/tmp/camin";
