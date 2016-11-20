@@ -106,12 +106,6 @@ def filter_lone(centers, gray, s=10, avgb=3.0):
     return lst
 
 
-#def mark(image, centers, s=25, col=(50, 255, 50), thick=4):
-#    for c in centers:
-#        y, x = int(c[0]), int(c[1])
-#        cv.rectangle(image, (x - s, y - s), (x + s, y + s), col, thick)
-
-
 def num_stars(gray):
     S = 3
     points = find_points(gray, S)

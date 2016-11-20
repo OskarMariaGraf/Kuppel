@@ -44,7 +44,7 @@ with open(PIPE_IN_NAME, 'rb') as pipe_in, open(PIPE_OUT_NAME, 'wb') as pipe_out:
         cloud_cover = clouded(image)
 
         pipe_in.read() # warten auf Anfrage
-        pipe_out.write( b'{:032b}'.format(int(4 * cloud_cover)) )
+        pipe_out.write( bytes([0, 0, 0, int(100 * cloud_cover)]) )
 
 
         sleep(T + t - time()) # jeder Durchgang der Schleife soll mindestens T minuten dauern
