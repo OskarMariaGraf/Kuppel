@@ -13,11 +13,14 @@ from time import sleep, time
 from io import BytesIO
 import PIL.Image as im
 import os
+import logging
 
 PIPE_IN_NAME = '/tmp/camin'
 PIPE_OUT_NAME = '/tmp/camout'
 
 T = 1.0 # Zeitintervall, in dem Bilder gemacht werden
+
+logging.info('lösche alte pipes und erstelle neue')
 
 os.remove(PIPE_IN_NAME)
 os.remove(PIPE_OUT_NAME)
@@ -39,13 +42,18 @@ with open(PIPE_IN_NAME, 'rb') as pipe_in, open(PIPE_OUT_NAME, 'wb') as pipe_out:
             camera.exposure_mode = 'off'
             camera.iso = 600
             camera.capture(stream, format='jpeg') # Photo schießen
+        logging.info('Bild gemacht')
 
         image = im.open(stream.getvalue())
-        cloud_cover = clouded(image)
+        gray = np.asarray(image.convert('LA'))[..., 0]
+        cloud_cover = clouded(gray)
+        logging.info('Cloudcover beträgt {}')
 
         pipe_in.read() # warten auf Anfrage
-        pipe_out.write( bytes([0, 0, 0, int(100 * cloud_cover)]) )
+        logging.info('Anfrage von Server erhalten')
 
+        pipe_out.write( bytes([0, 0, 0, int(100 * cloud_cover)]) )
+        logging.info('Cloudcover-Wert {} an Server geschickt'.format(100*cloud_cover))
 
         sleep(T + t - time()) # jeder Durchgang der Schleife soll mindestens T minuten dauern
 
