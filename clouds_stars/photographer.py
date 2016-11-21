@@ -39,6 +39,7 @@ parser.add_argument('-c', '--collect', action='store_const', const=True, default
 args = parser.parse_args()
 
 LOGLEVEL = args.debug
+TERMINATED = False
 
 
 def eval_sky():
@@ -93,6 +94,7 @@ def eval_sky():
         # helligkeitswerte zwischen 20 und 40 werden angepeilt
         if helligkeit > 100:
             shutter_speed = int(shutter_speed * 50 / helligkeit) # Notbremse
+            logger.info('Beleuchtungszeit auf {} ms heruntergesetzt'.format(shutter_speed))
         elif helligkeit > 45:
             shutter_speed = max(int(shutter_speed * 0.8), 1)
             logger.info('Beleuchtungszeit auf {} ms heruntergesetzt'.format(shutter_speed))
@@ -100,8 +102,11 @@ def eval_sky():
             shutter_speed = min(BASE_SS, int(shutter_speed * 1.2))
             logger.info('Beleuchtungszeit auf {} ms heraufgesetzt'.format(shutter_speed))
 
-
-        sleep(T + t - time())  # jeder Durchgang der Schleife soll mindestens T sekunden dauern
+        if not TERMINATED:
+            # jeder Durchgang der Schleife soll T sekunden dauern
+            sleep(T + t - time())
+        else:
+            return
 
 logging.root.setLevel(LOGLEVEL)
 
@@ -121,13 +126,19 @@ cloud_cover = 1.0
 photo_thread.start()
 
 logging.debug('starte main loop')
+
 while True:
-    # ich kann mich nicht entscheiden, ob das genial, oder zum Kotzen ist - funktioniert aber
-    with open(PIPE_IN_NAME, 'rb', 0): pass
-    logging.debug('Anfrage erhalten')
+    try:
+        # ich kann mich nicht entscheiden, ob das genial, oder zum Kotzen ist - funktioniert aber
+        with open(PIPE_IN_NAME, 'rb', 0): pass
+        logging.debug('Anfrage erhalten')
 
-    with open(PIPE_OUT_NAME, 'wb', 0) as pipe_out:
-        cc = cloud_cover # nur einzelne statements sind in Python atomic
-        pipe_out.write( bytes([0, 0, 0, int(100 * cc)]) )
+        with open(PIPE_OUT_NAME, 'wb', 0) as pipe_out:
+            cc = cloud_cover # nur einzelne statements sind in Python atomic
+            pipe_out.write( bytes([0, 0, 0, int(100 * cc)]) )
 
-    logging.info('Cloudcover-Wert {} an Server geschickt'.format(100 * cc))
+        logging.info('Cloudcover-Wert {} an Server geschickt'.format(100 * cc))
+    except:
+        TERMINATED = True
+        photo_thread.join()
+        raise #re-raise
