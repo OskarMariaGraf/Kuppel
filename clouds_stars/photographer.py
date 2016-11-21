@@ -23,7 +23,7 @@ PIPE_OUT_NAME = '/tmp/camout'
 BASE_SS = 4000000 # Belichtungszeit in microsekunden - und ja, der Name ist Zufall
 ISO = 600
 
-T = 1.0 # Zeitintervall, in dem Bilder gemacht werden
+T = 60.0 # Zeitintervall, in dem Bilder gemacht werden
 
 LOGLEVEL = logging.DEBUG
 
@@ -79,7 +79,7 @@ def eval_sky():
             logger.info('Beleuchtungszeit auf {} ms heraufgesetzt'.format(shutter_speed))
 
 
-        sleep(T + t - time())  # jeder Durchgang der Schleife soll mindestens T minuten dauern
+        sleep(T + t - time())  # jeder Durchgang der Schleife soll mindestens T sekunden dauern
 
 logging.root.setLevel(LOGLEVEL)
 
