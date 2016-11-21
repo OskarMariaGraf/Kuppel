@@ -94,13 +94,16 @@ def eval_sky():
         # helligkeitswerte zwischen 20 und 40 werden angepeilt
         if helligkeit > 100:
             shutter_speed = int(shutter_speed * 50 / helligkeit) # Notbremse
-            logger.info('Beleuchtungszeit auf {} ms heruntergesetzt'.format(shutter_speed))
+            logger.info('Beleuchtungszeit auf {:.4g} ms heruntergesetzt'
+                        .format(shutter_speed / 1000))
         elif helligkeit > 45:
             shutter_speed = max(int(shutter_speed * 0.8), 1)
-            logger.info('Beleuchtungszeit auf {} ms heruntergesetzt'.format(shutter_speed))
+            logger.info('Beleuchtungszeit auf {:.4g} ms heruntergesetzt'
+                        .format(shutter_speed / 1000))
         elif helligkeit < 15 and shutter_speed < BASE_SS:
             shutter_speed = min(BASE_SS, int(shutter_speed * 1.2))
-            logger.info('Beleuchtungszeit auf {} ms heraufgesetzt'.format(shutter_speed))
+            logger.info('Beleuchtungszeit auf {:.4g} ms heraufgesetzt'
+                        .format(shutter_speed / 1000))
 
         if not TERMINATED:
             # jeder Durchgang der Schleife soll T sekunden dauern
