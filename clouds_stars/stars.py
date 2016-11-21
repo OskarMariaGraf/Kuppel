@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 # coding: utf-8
-
 __author__ = "Carlos Esparza"
+
+# um das Programm zu verstehen sollte man mit Python und insbesondere mit NumPy vertraut
+# sein. Wahrscheinlich fängt man am besten mit der Methode num_stars an und schaut sich
+# dann die von num_stars aufgerufenen Methode an
 
 from typing import List
 import PIL.Image as im
 import numpy as np
 from collections import namedtuple as NT
-
 
 Pixel = NT('Pixel', ('pos', 'ab', 'rb', 'db'))
 # ab = absolute brightness
@@ -21,11 +23,13 @@ Pixel = NT('Pixel', ('pos', 'ab', 'rb', 'db'))
 #    um wie viel der Punkt heller ist als seine Umgebung
 
 
-def find_points(gray: np.array, b=4.8, s=3) -> List[Pixel]:
+def find_points(gray: np.array, db=4.8, s=3) -> List[Pixel]:
     """"
     gibt eine Liste von Pixel zurück, die viel heller als ihre unmittelbare Umgebung sind
 
     :param gray: Array mit dem Graustufen der Pixel
+    :param db: minimale delta-brightness
+    :param s: verschiebung des Arrays
     """
     gnorm = gray / np.average(gray)
 
@@ -39,7 +43,7 @@ def find_points(gray: np.array, b=4.8, s=3) -> List[Pixel]:
     delta = delta[s : -s, s : -s]
     gnorm = gnorm[s : -s, s : -s]
     gray = gray[s : -s, s : -s]
-    stars = zip(*np.where(delta > b)) # dark python magic
+    stars = zip(*np.where(delta > db)) # dark python magic
 
     return [Pixel(st, gray[st], gnorm[st], delta[st]) for st in stars]
 
@@ -106,27 +110,39 @@ def filter_lone(centers, gray, s=10, avgb=3.0):
     return lst
 
 
-def num_stars(gray):
+def num_stars(gray: np.array) -> int:
+    """
+    gibt zurück wie viele Sterne sich in dem übergebenen array befinden
+    """
     S = 3
-    points = find_points(gray, S)
+    points = find_points(gray, S) # helle Pixel finden
     gray = gray[S:-S, S:-S]
-    candidates = aggregate(points)
+    candidates = aggregate(points) # nahe Pixel zu einem "Stern" zusammenfassen
 
     stars = filter_stars(candidates)
     centers = filter_lone([avg_pos(st) for st in stars], gray)
 
     return len(centers)
 
-def clouded(gray):
-    x2, y2 = gray.shape[0] // 2, gray.shape[1] // 2
+def clouded(gray: np.array) -> float:
+    """
+    gibt einen Cloud-cover Wert für das Bild zurück
+    """
+    x2, y2 = gray.shape[0] // 2, gray.shape[1] // 2 # Koordinaten des Mittelpunkts
 
+    # Das bild (ein 2D-array aus Graustufenwerten) wird in 4 Quadranten eingeteilt
     a, b, c, d = ( num_stars(gray[:x2+3, :y2+3]), num_stars(gray[x2-3:, :y2+3]),
                    num_stars(gray[:x2+3, y2-3:]), num_stars(gray[x2-3:, y2-3:]) )
 
-    return 1 - ((a > 0) + (b > 0) + (c > 0) + (d > 0)) / 4
+    # für jeden Quadranten, in dem kein Stern sichtbar ist beträgt der cloudcover-Wert 0.25
+    return 1 - ((a > 0) +
+                (b > 0) +
+                (c > 0) +
+                (d > 0))\
+                / 4
 
 
-if __name__ == '__main__':
+if __name__ == '__main__': # test ... nicht weiter beachten
     import sys
     folder = 'sky'
 

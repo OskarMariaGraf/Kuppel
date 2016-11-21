@@ -2,7 +2,6 @@
 # coding=utf-8
 #-------------------------------------------------------------------------------
 # Name:       photographer
-# Purpose:    
 # Created:    21.10.16
 
 __author__ = 'Carlos Esparza-Sanchez'
