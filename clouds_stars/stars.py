@@ -23,7 +23,19 @@ Pixel = NT('Pixel', ('pos', 'ab', 'rb', 'db'))
 #    um wie viel der Punkt heller ist als seine Umgebung
 
 
-def find_points(gray: np.array, db=4.8, s=3) -> List[Pixel]:
+#------------ relevante Parameter ------------
+# für find_points()
+DB_MIN_POINT = 4.8
+VERSCHIEBUNG = 3
+# für aggregate()
+AGGREGATE_DIST = 7.5
+# für filter_stars() -- eigentlich brauche ich nicht alle diese Parameter
+FILTER_AB_MIN = 60
+FILTER_RB_MIN = 8.0
+FILTER_DB_MIN = 5.0
+
+
+def find_points(gray: np.array, db=DB_MIN_POINT, s=VERSCHIEBUNG) -> List[Pixel]:
     """"
     gibt eine Liste von Pixel zurück, die viel heller als ihre unmittelbare Umgebung sind
 
@@ -61,7 +73,7 @@ def star_dist(x, star) -> float:
     return np.linalg.norm(np.array(x) - np.array(avg_pos(star)))
 
 
-def aggregate(points: List[Pixel], dist=7.5) -> List[Pixel]:
+def aggregate(points: List[Pixel], dist=AGGREGATE_DIST) -> List[Pixel]:
     """
     fasst (helle) Pixel, die näher als dist zusammen liegen zu einem Stern
     (= Liste von Pixel) zusammen
@@ -78,7 +90,8 @@ def aggregate(points: List[Pixel], dist=7.5) -> List[Pixel]:
     return stars
 
 
-def filter_stars(stars: List[Pixel], n=3, ab_min=60, rb_min=8.0, db_min=5.0):
+def filter_stars(stars: List[Pixel], n=3, ab_min=FILTER_AB_MIN, rb_min=FILTER_RB_MIN,
+                 db_min=FILTER_DB_MIN):
     """
     Filtert die sterne heraus, die nicht hell genug sind
     """
