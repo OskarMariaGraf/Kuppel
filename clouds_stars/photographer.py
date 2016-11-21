@@ -7,7 +7,7 @@
 __author__ = 'Carlos Esparza-Sanchez'
 #-------------------------------------------------------------------------------
 
-from .stars import *
+from stars import *
 import numpy as np
 import picamera
 from time import sleep, time
