@@ -50,7 +50,7 @@ def eval_sky():
         image = im.open(BytesIO(stream.getvalue()))
         gray = np.asarray(image.convert('LA'))[..., 0]
 
-        if (gray == 0).all : continue # wir wollen keine schwarzen Bilder auswerten...
+        if (gray == 0).all() : continue # wir wollen keine schwarzen Bilder auswerten...
         cloud_cover = clouded(gray)
         logger.info('Cloudcover beträgt {}'.format(cloud_cover))
 
@@ -78,10 +78,11 @@ os.mkfifo(PIPE_IN_NAME)
 os.mkfifo(PIPE_OUT_NAME)
 logging.debug('alte pipes gelöscht, neue erstellt')
 
-photo_thread = threading.Thread(target=eval_sky, name='eval_sky')
+photo_thread = threading.Thread(target=eval_sky, name='Thread-eval_sky')
 
 cloud_cover = 1.0
 photo_thread.start()
+sleep(1)
 
 logging.debug('starte main loop')
 while True:
