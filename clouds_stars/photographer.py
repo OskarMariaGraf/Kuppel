@@ -49,6 +49,8 @@ def eval_sky():
     logger = logging.getLogger('photographer')
     logger.setLevel(LOGLEVEL)
 
+    # logs werden in die Datei cloudcover.log geschrieben, das Format ist relativ
+    # selbsterklärend
     fh = logging.FileHandler('cloudcover.log')
     fh.setLevel(logging.INFO)
     fmt = logging.Formatter('%(asctime)s  %(name)s: %(levelname)s: %(message)s',
@@ -79,7 +81,10 @@ def eval_sky():
         image = im.open(BytesIO(stream.getvalue()))
         gray = np.asarray(image.convert('LA'))[..., 0]
 
-        if (gray == 0).all() : continue # wir wollen keine schwarzen Bilder auswerten...
+        # es ist ein Paar mal passiert, dass die Bilder vollkommen schwarz waren - in
+        # diesem Fall machen wir einfach ein neues
+        if (gray == 0).all() : continue
+
         cloud_cover = clouded(gray)
         logger.info('Cloudcover beträgt {}'.format(cloud_cover))
 
@@ -108,7 +113,7 @@ def eval_sky():
         if not TERMINATED:
             # jeder Durchgang der Schleife soll T sekunden dauern
             sleep(T + t - time())
-        else:
+        else: # anscheinend wurden wir beendet...
             return
 
 logging.root.setLevel(LOGLEVEL)
@@ -138,10 +143,11 @@ while True:
 
         with open(PIPE_OUT_NAME, 'wb', 0) as pipe_out:
             cc = cloud_cover # nur einzelne statements sind in Python atomic
-            pipe_out.write( bytes([0, 0, 0, int(100 * cc)]) )
+            pipe_out.write( bytes([int(100 * cc), 0, 0, 0]) )
 
         logging.info('Cloudcover-Wert {} an Server geschickt'.format(100 * cc))
     except:
         TERMINATED = True
+        logging.exception('Programm wird Beendet')
         photo_thread.join()
         raise #re-raise
