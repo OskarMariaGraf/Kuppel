@@ -25,9 +25,12 @@ ISO = 600
 
 T = 1.0 # Zeitintervall, in dem Bilder gemacht werden
 
+LOGLEVEL = logging.DEBUG
+
 def eval_sky():
     global cloud_cover
-    logger = logging.Logger('photographer', logging.INFO)
+    logger = logging.Logger('photographer', LOGLEVEL)
+    logger.debug('Thread eval_sky gestartet')
     shutter_speed = BASE_SS
 
     while True:
@@ -47,7 +50,7 @@ def eval_sky():
         image = im.open(BytesIO(stream.getvalue()))
         gray = np.asarray(image.convert('LA'))[..., 0]
 
-        if all(gray == 0) : continue # wir wollen keine schwarzen Bilder auswerten...tter_speed * 1.25)
+        if (gray == 0).all : continue # wir wollen keine schwarzen Bilder auswerten...
         cloud_cover = clouded(gray)
         logger.info('Cloudcover beträgt {}'.format(cloud_cover))
 
@@ -63,6 +66,7 @@ def eval_sky():
 
         sleep(T + t - time())  # jeder Durchgang der Schleife soll mindestens T minuten dauern
 
+logging.root.setLevel(LOGLEVEL)
 
 if os.path.exists(PIPE_IN_NAME):
     os.remove(PIPE_IN_NAME)
@@ -77,12 +81,13 @@ logging.debug('alte pipes gelöscht, neue erstellt')
 photo_thread = threading.Thread(target=eval_sky, name='eval_sky')
 
 cloud_cover = 1.0
-photo_thread.run()
+photo_thread.start()
 
+logging.debug('starte main loop')
 while True:
     # ich kann mich nicht entscheiden, ob das genial, oder zum Kotzen ist - funktioniert aber
     with open(PIPE_IN_NAME, 'rb', 0): pass
-    logging.log('Anfrage erhalten')
+    logging.debug('Anfrage erhalten')
 
     with open(PIPE_OUT_NAME, 'wb', 0) as pipe_out:
         cc = cloud_cover # nur einzelne statements sind in Python atomic
