@@ -7,6 +7,10 @@
 __author__ = 'Carlos Esparza-Sanchez'
 #-------------------------------------------------------------------------------
 
+# das Programm macht jede Minute ein Bild vom Himmel und berechnet einen cloudcover-Wert
+# Auf Anfrage des Servers wird der letzte ermittelte Cloudcover-Wert übergeben.
+# Die logging-Befehle dokumentieren das Programm relativ gut
+
 from stars import *
 import numpy as np
 import picamera
@@ -69,6 +73,9 @@ def eval_sky():
         helligkeit = np.average(gray)
         logger.info('Helligkeit beträgt {:.3g}'.format(helligkeit))
 
+
+        # falls das Bild zu hell ist wird die Belichtungszeit reduziert
+        # helligkeitswerte zwischen 20 und 40 werden angepeilt
         if helligkeit > 100:
             shutter_speed *= 50 / helligkeit # Notbremse
         elif helligkeit > 45:
@@ -97,7 +104,6 @@ photo_thread = threading.Thread(target=eval_sky, name='Thread-eval_sky')
 
 cloud_cover = 1.0
 photo_thread.start()
-sleep(1)
 
 logging.debug('starte main loop')
 while True:
