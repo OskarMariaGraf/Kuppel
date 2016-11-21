@@ -52,7 +52,7 @@ with open(PIPE_IN_NAME, 'rb') as pipe_in, open(PIPE_OUT_NAME, 'wb') as pipe_out:
             camera.capture(stream, format='jpeg') # Photo schießen
         logging.info('Bild gemacht')
 
-        image = im.open(stream.getvalue())
+        image = im.open(BytesIO(stream.getvalue()))
         gray = np.asarray(image.convert('LA'))[..., 0]
         cloud_cover = clouded(gray)
         logging.debug('Cloudcover beträgt {}')
