@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
    		 {
    		 case 0xff://Daten Senden versuchen bei 0xff, weil das halt so is
    			 double d[5];
-   			 d[0] = ((int) DatenEmpfangen(KameraWolken1, KameraWolken2)) / 4.0;	//Wolkenverdeckung
+   			 d[0] = ((int) DatenEmpfangen(KameraWolken1, KameraWolken2)) / 100;	//Wolkenverdeckung
    			 d[1] = DatenEmpfangen(RegenRinne1,RegenRinne2);		//Regen
    			 d[2] = rand() * 324872.123;							//Windgeschwindigkeit
    			 d[3] = rand() * 123.45;								//Himmelshelligkeit
