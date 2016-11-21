@@ -28,8 +28,22 @@ T = 1.0 # Zeitintervall, in dem Bilder gemacht werden
 LOGLEVEL = logging.DEBUG
 
 def eval_sky():
-    global cloud_cover
-    logger = logging.Logger('photographer', LOGLEVEL)
+    global cloud_cover # der cloudcover-Wert wird über diese Variable übermittelt
+
+    # Logging
+    logger = logging.getLogger('photographer')
+    logger.setLevel(LOGLEVEL)
+    sh = logging.StreamHandler()
+    sh.setLevel(LOGLEVEL)
+    logger.addHandler(sh)
+    fh = logging.FileHandler('cloudcover.log')
+    fh.setLevel(logging.INFO)
+    fmt = logging.Formatter('%(asctime)s  %(name)s: %(levelname)s: %(message)s',
+                            datefmt='%d. %m. %Y %I:%M:%S')
+    fh.setFormatter(fmt)
+    logger.addHandler(fh)
+
+
     logger.debug('Thread eval_sky gestartet')
     shutter_speed = BASE_SS
 
@@ -55,6 +69,7 @@ def eval_sky():
         logger.info('Cloudcover beträgt {}'.format(cloud_cover))
 
         helligkeit = np.average(gray)
+        logger.info('Helligkeit beträgt {:.3g}'.format(helligkeit))
 
         if helligkeit > 45:
             shutter_speed = max(shutter_speed * 0.8, 1)
