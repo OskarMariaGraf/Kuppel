@@ -20,16 +20,26 @@ import PIL.Image as im
 import os
 import logging
 import threading
+import argparse
 
 PIPE_IN_NAME = '/tmp/camin'
 PIPE_OUT_NAME = '/tmp/camout'
 
 BASE_SS = 4000000 # Belichtungszeit in microsekunden - und ja, der Name ist Zufall
 ISO = 600
-
 T = 60.0 # Zeitintervall, in dem Bilder gemacht werden
 
-LOGLEVEL = logging.DEBUG
+parser = argparse.ArgumentParser(description='Bestimmt cloudcover anhand der Anzahl an '
+                                             'sichtbaren Sternen')
+parser.add_argument('-d', '--debug', action='store_const', const=logging.DEBUG,
+                    default=logging.WARN, help='Debug-Informationen ausgeben')
+
+parser.add_argument('-c', '--collect', action='store_const', const=True, default=False,
+                    help='cloudcover-Werte speichern')
+args = parser.parse_args()
+
+LOGLEVEL = args.debug
+
 
 def eval_sky():
     global cloud_cover # der cloudcover-Wert wird über diese Variable übermittelt
@@ -45,6 +55,8 @@ def eval_sky():
     fh.setFormatter(fmt)
     logger.addHandler(fh)
 
+    if args.collect:
+        f = open('data.csv', 'w')
 
     logger.debug('Thread eval_sky gestartet')
     shutter_speed = BASE_SS
@@ -69,6 +81,9 @@ def eval_sky():
         if (gray == 0).all() : continue # wir wollen keine schwarzen Bilder auswerten...
         cloud_cover = clouded(gray)
         logger.info('Cloudcover beträgt {}'.format(cloud_cover))
+
+        if args.collect:
+            f.write('{}\n'.format(cloud_cover))
 
         helligkeit = np.average(gray)
         logger.info('Helligkeit beträgt {:.3g}'.format(helligkeit))
