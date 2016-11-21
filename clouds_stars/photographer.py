@@ -33,9 +33,7 @@ def eval_sky():
     # Logging
     logger = logging.getLogger('photographer')
     logger.setLevel(LOGLEVEL)
-    sh = logging.StreamHandler()
-    sh.setLevel(LOGLEVEL)
-    logger.addHandler(sh)
+
     fh = logging.FileHandler('cloudcover.log')
     fh.setLevel(logging.INFO)
     fmt = logging.Formatter('%(asctime)s  %(name)s: %(levelname)s: %(message)s',
@@ -71,7 +69,9 @@ def eval_sky():
         helligkeit = np.average(gray)
         logger.info('Helligkeit beträgt {:.3g}'.format(helligkeit))
 
-        if helligkeit > 45:
+        if helligkeit > 100:
+            shutter_speed *= 50 / helligkeit # Notbremse
+        elif helligkeit > 45:
             shutter_speed = max(shutter_speed * 0.8, 1)
             logger.info('Beleuchtungszeit auf {} ms heruntergesetzt'.format(shutter_speed))
         elif helligkeit < 15 and shutter_speed < BASE_SS:
