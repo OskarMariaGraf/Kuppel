@@ -54,7 +54,7 @@ def eval_sky():
     fh = logging.FileHandler('cloudcover.log')
     fh.setLevel(logging.INFO)
     fmt = logging.Formatter('%(asctime)s  %(name)s: %(levelname)s: %(message)s',
-                            datefmt='%d. %m. %Y %I:%M:%S')
+                            datefmt='%d.%m.%Y %I:%M:%S')
     fh.setFormatter(fmt)
     logger.addHandler(fh)
 
@@ -78,8 +78,11 @@ def eval_sky():
             camera.capture(stream, format='jpeg')  # Photo schießen
 
         logger.info('Bild gemacht')
+        # aus irgendeinem Grund kann man nicht aus dem Stream in den geschrieben wurde
+        # lesen, also wird ein neuer Stream mit dem gleich Inhalt erstellt und an im.open
+        # übergeben wie wenn er ein Datei-objekt wäre
         image = im.open(BytesIO(stream.getvalue()))
-        gray = np.asarray(image.convert('LA'))[..., 0]
+        gray = np.asarray(image.convert('LA'))[..., 0] # in Graustufen-Array konvertieren
 
         # es ist ein Paar mal passiert, dass die Bilder vollkommen schwarz waren - in
         # diesem Fall machen wir einfach ein neues
@@ -89,14 +92,16 @@ def eval_sky():
         logger.info('Cloudcover beträgt {}'.format(cloud_cover))
 
         if args.collect:
-            f.write('{}\n'.format(cloud_cover))
+            f.write('{} '.format(cloud_cover))
+            f.flush()
 
-        helligkeit = np.average(gray)
+        helligkeit = np.average(gray) # mittlere Helligekeit des Bildes
         logger.info('Helligkeit beträgt {:.3g}'.format(helligkeit))
 
 
         # falls das Bild zu hell ist wird die Belichtungszeit reduziert
-        # helligkeitswerte zwischen 20 und 40 werden angepeilt
+        # helligkeitswerte zwischen 20 und 40 werden angepeilt - die Regeln zur
+        # Reduzierung der Belichtungszeit sind relativ willkürlich
         if helligkeit > 100:
             shutter_speed = int(shutter_speed * 50 / helligkeit) # Notbremse
             logger.info('Beleuchtungszeit auf {:.4g} ms heruntergesetzt'
@@ -114,20 +119,24 @@ def eval_sky():
             # jeder Durchgang der Schleife soll T sekunden dauern
             sleep(T + t - time())
         else: # anscheinend wurden wir beendet...
+            f.close()
             return
+
 
 logging.root.setLevel(LOGLEVEL)
 
-if os.path.exists(PIPE_IN_NAME):
+if os.path.exists(PIPE_IN_NAME): # lösche eventuell noch vorhandene alte pipes
     os.remove(PIPE_IN_NAME)
 
 if os.path.exists(PIPE_OUT_NAME):
     os.remove(PIPE_OUT_NAME)
 
-os.mkfifo(PIPE_IN_NAME)
+os.mkfifo(PIPE_IN_NAME) # erstelle neue pipes
 os.mkfifo(PIPE_OUT_NAME)
 logging.debug('alte pipes gelöscht, neue erstellt')
 
+# erstelle Thread, der jede Minute ein Bild von Himmel auswertet und den cloudcover-Wert
+# in die variable cloud_cover schreibt
 photo_thread = threading.Thread(target=eval_sky, name='Thread-eval_sky')
 
 cloud_cover = 1.0
@@ -143,7 +152,7 @@ while True:
 
         with open(PIPE_OUT_NAME, 'wb', 0) as pipe_out:
             cc = cloud_cover # nur einzelne statements sind in Python atomic
-            pipe_out.write( bytes([int(100 * cc), 0, 0, 0]) )
+            pipe_out.write( bytes([int(100 * cc), 0, 0, 0]) ) # raspbian ist little-endian
 
         logging.info('Cloudcover-Wert {} an Server geschickt'.format(100 * cc))
     except:
