@@ -152,7 +152,7 @@ while True:
 
         with open(PIPE_OUT_NAME, 'wb', 0) as pipe_out:
             cc = cloud_cover # nur einzelne statements sind in Python atomic
-            pipe_out.write( bytes([int(100 * cc), 0, 0, 0]) ) # raspbian ist little-endian
+            pipe_out.write( bytes([int(100 * cc), * (0,)*7 ]) ) # raspbian ist little-endian
 
         logging.info('Cloudcover-Wert {} an Server geschickt'.format(100 * cc))
     except:
