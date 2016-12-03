@@ -173,4 +173,4 @@ if __name__ == '__main__': # test ... nicht weiter beachten
         print('image', i, 'clouded:', clouded(gray))
 
         imgarr = imgarr[S:-S, S:-S]
-        
+

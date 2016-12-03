@@ -144,10 +144,14 @@ photo_thread.start()
 
 logging.debug('starte main loop')
 
+# normale (blocking) pipes haben aus irgendeinem Grund nicht Funktioniert
+fin = os.open(PIPE_IN_NAME, os.O_NONBLOCK)
+
 while True:
     try:
-        # ich kann mich nicht entscheiden, ob das genial, oder zum Kotzen ist - funktioniert aber
-        with open(PIPE_IN_NAME, 'rb', 0): pass
+        logging.debug('warte auf Anfrage...')
+        while not os.read(fin, 1):
+            sleep(0.2) # 5x pro Sekunde sollte reichen...
         logging.debug('Anfrage erhalten')
 
         with open(PIPE_OUT_NAME, 'wb', 0) as pipe_out:
