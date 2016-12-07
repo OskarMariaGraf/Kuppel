@@ -145,18 +145,20 @@ photo_thread.start()
 logging.debug('starte main loop')
 
 # normale (blocking) pipes haben aus irgendeinem Grund nicht Funktioniert
-fin = os.open(PIPE_IN_NAME, os.O_NONBLOCK)
+# fin = os.open(PIPE_IN_NAME, os.O_NONBLOCK)
+pipe_out = os.open(PIPE_OUT_NAME, os.O_NONBLOCK)
 
 while True:
     try:
         logging.debug('warte auf Anfrage...')
-        while not os.read(fin, 1):
-            sleep(0.2) # 5x pro Sekunde sollte reichen...
+        # while not os.read(fin, 1):
+        #    sleep(0.2) # 5x pro Sekunde sollte reichen...
+        with open(PIPE_IN_NAME, 'rb', 0) as f: f.read(1)
         logging.debug('Anfrage erhalten')
 
-        with open(PIPE_OUT_NAME, 'wb', 0) as pipe_out:
-            cc = cloud_cover # nur einzelne statements sind in Python atomic
-            pipe_out.write( bytes([int(100 * cc), * (0,)*7 ]) ) # raspbian ist little-endian
+        # with open(PIPE_OUT_NAME, 'wb', 0) as pipe_out:
+        cc = cloud_cover # nur einzelne statements sind in Python atomic
+        pipe_out.write( bytes([int(100 * cc), * (0,)*7 ]) ) # raspbian ist little-endian
 
         logging.info('Cloudcover-Wert {} an Server geschickt'.format(100 * cc))
     except:
