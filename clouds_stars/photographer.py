@@ -60,6 +60,8 @@ def eval_sky():
 
     if args.collect:
         f = open('data.csv', 'w')
+    else:
+        f = None
 
     logger.debug('Thread eval_sky gestartet')
     shutter_speed = BASE_SS
@@ -119,7 +121,7 @@ def eval_sky():
             # jeder Durchgang der Schleife soll T sekunden dauern
             sleep(T + t - time())
         else: # anscheinend wurden wir beendet...
-            f.close()
+            if f: f.close()
             return
 
 
