@@ -158,12 +158,13 @@ while True:
         with open(PIPE_IN_NAME, 'rb', 0) as f: f.read(1)
         logging.debug('Anfrage erhalten')
 
-        # with open(PIPE_OUT_NAME, 'wb', 0) as pipe_out:
-        cc = cloud_cover # nur einzelne statements sind in Python atomic
-        pipe_out = os.open(PIPE_OUT_NAME, os.O_NONBLOCK)
-        os.write(pipe_out, bytes([int(100 * cc), 0, 0, 0, 0, 0, 0, 0]) ) # raspbian ist little-endian
+        with open(PIPE_OUT_NAME, 'wb', 0) as pipe_out:
+            cc = cloud_cover # nur einzelne statements sind in Python atomic
+            # pipe_out = os.open(PIPE_OUT_NAME, os.O_NONBLOCK)
+            #os.write(pipe_out, bytes([int(100 * cc), 0, 0, 0, 0, 0, 0, 0]) ) # raspbian ist little-endian
+            pipe_out.write(bytes([int(100*cc), 0, 0, 0, 0, 0, 0, 0]))
 
-        os.close(pipe_out)
+        # os.close(pipe_out)
         logging.info('Cloudcover-Wert {} an Server geschickt'.format(100 * cc))
     except:
         TERMINATED = True
