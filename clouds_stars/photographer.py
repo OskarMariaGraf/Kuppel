@@ -146,7 +146,7 @@ logging.debug('starte main loop')
 
 # normale (blocking) pipes haben aus irgendeinem Grund nicht Funktioniert
 # fin = os.open(PIPE_IN_NAME, os.O_NONBLOCK)
-pipe_out = os.open(PIPE_OUT_NAME, os.O_NONBLOCK)
+# pipe_out = os.open(PIPE_OUT_NAME, os.O_NONBLOCK)
 
 while True:
     try:
@@ -158,8 +158,10 @@ while True:
 
         # with open(PIPE_OUT_NAME, 'wb', 0) as pipe_out:
         cc = cloud_cover # nur einzelne statements sind in Python atomic
+        pipe_out = os.open(PIPE_OUT_NAME, os.O_NONBLOCK)
         os.write(pipe_out, bytes([int(100 * cc), 0, 0, 0, 0, 0, 0, 0]) ) # raspbian ist little-endian
 
+        os.close(pipe_out)
         logging.info('Cloudcover-Wert {} an Server geschickt'.format(100 * cc))
     except:
         TERMINATED = True
