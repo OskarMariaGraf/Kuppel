@@ -15,7 +15,7 @@ __author__ = 'Carlos Esparza-Sanchez'
 from stars import *
 import numpy as np
 import picamera
-from time import sleep, time
+from time import sleep, time, localtime
 from io import BytesIO
 import PIL.Image as im
 import os
@@ -25,6 +25,8 @@ import argparse
 
 PIPE_IN_NAME = '/tmp/camin'
 PIPE_OUT_NAME = '/tmp/camout'
+
+PHOTO_DIR_NAME = 'aenderungen'
 
 # Belichtungszeit in microsekunden - und ja, der Name ist Zufall
 BASE_SS = 4000000
@@ -94,7 +96,18 @@ def eval_sky():
         # waren - in diesem Fall machen wir einfach ein neues
         if (gray == 0).all(): continue
 
-        cloud_cover = clouded(gray)
+        new_cloud_cover = clouded(gray)
+
+        # wir dokumentieren eine änderung des cloud-cover-Werts
+        if abs(new_cloud_cover - cloud_cover) >= 0.1:
+            image.save(
+                os.path.join(PHOTO_DIR_NAME,
+                             '{0.tm_year}-{0.tm_mon:02}-{0.tm_day:02}-'
+                             '{0.tm_hour:02}-{0.tm_min:02}-{1}-{2}'
+                             .format(localtime(), cloud_cover, new_cloud_cover))
+            )
+        cloud_cover = new_cloud_cover
+
         logger.info('Cloudcover beträgt {}'.format(cloud_cover))
 
         if args.collect:
