@@ -149,6 +149,9 @@ if os.path.exists(PIPE_IN_NAME):  # lösche eventuell noch vorhandene alte pipes
 if os.path.exists(PIPE_OUT_NAME):
     os.remove(PIPE_OUT_NAME)
 
+if not os.path.exists(PHOTO_DIR_NAME):
+    os.mkdir(PHOTO_DIR_NAME)
+
 os.mkfifo(PIPE_IN_NAME)  # erstelle neue pipes
 os.mkfifo(PIPE_OUT_NAME)
 logging.debug('alte pipes gelöscht, neue erstellt')
