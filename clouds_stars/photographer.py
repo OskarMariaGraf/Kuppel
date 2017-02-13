@@ -40,10 +40,18 @@ parser.add_argument('-d', '--debug', action='store_const', const=logging.DEBUG,
 
 parser.add_argument('-c', '--collect', action='store_const', const=True,
                     default=False, help='cloudcover-Werte speichern')
+
+parser.add_argument('-y', '--yolo', action='store_const', const=True,
+                    default=False, help='sends random data')
+
 args = parser.parse_args()
 
 LOGLEVEL = args.debug
 TERMINATED = False
+
+if args.yolo:
+  import random
+  clouded = lambda *_, **__: random.random()
 
 
 def eval_sky():
