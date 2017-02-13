@@ -110,7 +110,7 @@ def eval_sky():
         if abs(new_cloud_cover - cloud_cover) >= 0.1:
             image.save(
                 os.path.join(PHOTO_DIR_NAME,
-                             '{0.tm_year}-{0.tm_mon:02}-{0.tm_day:02}-'
+                             '{0.tm_year}-{0.tm_mon:02}-{0.tm_mday:02}-'
                              '{0.tm_hour:02}-{0.tm_min:02}-{1}-{2}'
                              .format(localtime(), cloud_cover, new_cloud_cover))
             )
